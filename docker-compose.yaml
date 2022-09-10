@@ -1,0 +1,13 @@
+version: '3.1'
+services:
+  divide-comigo-postgres:
+    image: postgres
+    container_name: db-controle-peso
+    environment:
+      POSTGRES_PASSWORD: controlepeso
+      POSTGRES_USER: adm_controlepeso
+      POSTGRES_DB: controlepeso
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
