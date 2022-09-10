@@ -2,14 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/danielcesario/controlepeso/internal/controlepeso"
 )
 
 type Service interface {
-	CreateEntry(entry controlepeso.Entry) error
+	CreateEntry(entry controlepeso.Entry) (*controlepeso.Entry, error)
 }
 
 type Handler struct {
@@ -23,13 +22,17 @@ func NewHandler(service Service) *Handler {
 }
 
 func (a *Handler) HandleCreate(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleCreate")
-
-	entry := controlepeso.Entry{
-		UserId: 1,
-		Weight: 110.5,
-		Date:   "2022-09-10 00:25:00",
+	var newEntry controlepeso.Entry
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&newEntry); err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
 	}
-	a.Service.CreateEntry(entry)
-	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	defer r.Body.Close()
+
+	createdEntry, err := a.Service.CreateEntry(newEntry)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	respondWithJSON(w, http.StatusCreated, createdEntry)
 }

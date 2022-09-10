@@ -1,7 +1,8 @@
 package controlepeso
 
 type Entry struct {
-	UserId int     `json:"userId"`
+	ID     int     `json:"id"`
+	UserId int     `json:"user_id"`
 	Weight float64 `json:"weight"`
 	Date   string  `json:"date"`
 }

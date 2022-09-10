@@ -29,14 +29,14 @@ func InitializeDB(user, password, dbname string) *sql.DB {
 	return conn
 }
 
-func (repository *PGRepository) Save(entry Entry) error {
-	fmt.Println("Save")
-
-	_, err := repository.DB.Exec("INSERT INTO t_entry(user_id, weight, date) VALUES ($1, $2, $3)",
-		entry.UserId, entry.Weight, entry.Date)
+func (repository *PGRepository) Save(entry Entry) (*Entry, error) {
+	err := repository.DB.QueryRow(
+		"INSERT INTO t_entry(user_id, weight, date) VALUES ($1, $2, $3) RETURNING id",
+		entry.UserId, entry.Weight, entry.Date).Scan(&entry.ID)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return &entry, nil
 }

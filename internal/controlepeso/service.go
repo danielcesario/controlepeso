@@ -1,9 +1,7 @@
 package controlepeso
 
-import "fmt"
-
 type Repository interface {
-	Save(entry Entry) error
+	Save(entry Entry) (*Entry, error)
 }
 
 type Service struct {
@@ -16,7 +14,6 @@ func NewService(repository Repository) *Service {
 	}
 }
 
-func (service *Service) CreateEntry(entry Entry) error {
-	fmt.Println("CreateEntry")
+func (service *Service) CreateEntry(entry Entry) (*Entry, error) {
 	return service.Repository.Save(entry)
 }

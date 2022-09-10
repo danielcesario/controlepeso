@@ -11,14 +11,17 @@ import (
 )
 
 func main() {
-	conn := controlepeso.InitializeDB("adm_controlepeso", "controlepeso", "controlepeso")
-	repository := controlepeso.NewPGRepository(conn)
+	db := controlepeso.InitializeDB("adm_controlepeso", "controlepeso", "controlepeso")
+	repository := controlepeso.NewPGRepository(db)
 	service := controlepeso.NewService(repository)
 	apiHandler := handler.NewHandler(service)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", apiHandler.HandleCreate).Methods("POST")
+	runServer(router)
+}
 
+func runServer(router *mux.Router) {
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         "127.0.0.1:8000",
