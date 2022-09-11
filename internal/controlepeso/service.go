@@ -2,6 +2,7 @@ package controlepeso
 
 type Repository interface {
 	Save(entry Entry) (*Entry, error)
+	ListAll(start, count int) ([]Entry, error)
 }
 
 type Service struct {
@@ -16,4 +17,8 @@ func NewService(repository Repository) *Service {
 
 func (service *Service) CreateEntry(entry Entry) (*Entry, error) {
 	return service.Repository.Save(entry)
+}
+
+func (service *Service) ListEntries(start, count int) ([]Entry, error) {
+	return service.Repository.ListAll(start, count)
 }

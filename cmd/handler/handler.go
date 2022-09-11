@@ -3,12 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/danielcesario/controlepeso/internal/controlepeso"
 )
 
 type Service interface {
 	CreateEntry(entry controlepeso.Entry) (*controlepeso.Entry, error)
+	ListEntries(start, count int) ([]controlepeso.Entry, error)
 }
 
 type Handler struct {
@@ -21,7 +23,7 @@ func NewHandler(service Service) *Handler {
 	}
 }
 
-func (a *Handler) HandleCreate(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) HandleCreateEntry(w http.ResponseWriter, r *http.Request) {
 	var newEntry controlepeso.Entry
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&newEntry); err != nil {
@@ -30,9 +32,28 @@ func (a *Handler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	createdEntry, err := a.Service.CreateEntry(newEntry)
+	createdEntry, err := handler.Service.CreateEntry(newEntry)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 	respondWithJSON(w, http.StatusCreated, createdEntry)
+}
+
+func (handler *Handler) HandleListEntries(w http.ResponseWriter, r *http.Request) {
+	count, _ := strconv.Atoi(r.FormValue("count"))
+	start, _ := strconv.Atoi(r.FormValue("start"))
+
+	if count < 1 {
+		count = 10
+	}
+
+	if start < 0 {
+		start = 0
+	}
+
+	entries, err := handler.Service.ListEntries(start, count)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	respondWithJSON(w, http.StatusOK, entries)
 }

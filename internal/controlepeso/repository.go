@@ -40,3 +40,26 @@ func (repository *PGRepository) Save(entry Entry) (*Entry, error) {
 
 	return &entry, nil
 }
+
+func (repository *PGRepository) ListAll(start, count int) ([]Entry, error) {
+	rows, err := repository.DB.Query(
+		"SELECT id, user_id, weight, date FROM t_entry LIMIT $1 OFFSET $2",
+		count, start)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	entries := []Entry{}
+	for rows.Next() {
+		var entry Entry
+		if err := rows.Scan(&entry.ID, &entry.UserId, &entry.Weight, &entry.Date); err != nil {
+			return nil, err
+		}
+		entries = append(entries, entry)
+	}
+
+	return entries, nil
+}

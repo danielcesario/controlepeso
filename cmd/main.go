@@ -17,7 +17,8 @@ func main() {
 	apiHandler := handler.NewHandler(service)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", apiHandler.HandleCreate).Methods("POST")
+	router.HandleFunc("/entries", apiHandler.HandleCreateEntry).Methods("POST")
+	router.HandleFunc("/entries", apiHandler.HandleListEntries).Methods("GET")
 	runServer(router)
 }
 
