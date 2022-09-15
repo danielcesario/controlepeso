@@ -9,20 +9,24 @@ import (
 
 	"github.com/danielcesario/controlepeso/cmd/handler"
 	"github.com/danielcesario/controlepeso/internal/controlepeso"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type MockService struct {
-	CreateEntryFunc func(entry controlepeso.Entry) (*controlepeso.Entry, error)
-	CreatedEntries  []controlepeso.Entry
+	mock.Mock
 }
 
 func (mock *MockService) CreateEntry(entry controlepeso.Entry) (*controlepeso.Entry, error) {
-	mock.CreatedEntries = append(mock.CreatedEntries, entry)
-	return mock.CreateEntryFunc(entry)
+	arg := mock.Mock.Called(entry)
+	result, _ := arg.Get(0).(controlepeso.Entry)
+	return &result, arg.Error(1)
 }
 
 func (mock *MockService) ListEntries(start, count int) ([]controlepeso.Entry, error) {
-	return mock.CreatedEntries, nil
+	arg := mock.Mock.Called(start, count)
+	result, _ := arg.Get(0).([]controlepeso.Entry)
+	return result, arg.Error(1)
 }
 
 func TestCreateEntry(t *testing.T) {
@@ -35,11 +39,8 @@ func TestCreateEntry(t *testing.T) {
 			Date:   "2022-05-10 00:30:00",
 		}
 
-		service := &MockService{
-			CreateEntryFunc: func(entry controlepeso.Entry) (*controlepeso.Entry, error) {
-				return expectedCreatedUser, nil
-			},
-		}
+		service := new(MockService)
+		service.On("CreateEntry", mock.Anything).Once().Return(*expectedCreatedUser, nil)
 
 		// And: The handler received a valid entry
 		handler := handler.NewHandler(service)
@@ -50,26 +51,17 @@ func TestCreateEntry(t *testing.T) {
 		handler.HandleCreateEntry(res, req)
 
 		// Then: Return the expected status code
-		if status := res.Code; status != http.StatusCreated {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusCreated)
-		}
+		assert.Equal(t, http.StatusCreated, res.Code)
 
 		// And: The response body was correct
 		expected := `{"id":1,"user_id":1,"weight":105.6,"date":"2022-05-10 00:30:00"}`
-		if res.Body.String() != expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				res.Body.String(), expected)
-		}
+		assert.Equal(t, expected, res.Body.String())
 	})
 
-	t.Run("Error on create entry with invalid JSON", func(t *testing.T) {
+	t.Run("Error on decode entry from JSON", func(t *testing.T) {
 		// Given: a Mock service
-		service := &MockService{
-			CreateEntryFunc: func(entry controlepeso.Entry) (*controlepeso.Entry, error) {
-				return nil, nil
-			},
-		}
+		service := new(MockService)
+		service.On("CreateEntry", mock.Anything).Once().Return(nil, nil)
 
 		// And: The handler received an invalid entry
 		handler := handler.NewHandler(service)
@@ -80,19 +72,13 @@ func TestCreateEntry(t *testing.T) {
 		handler.HandleCreateEntry(res, req)
 
 		// Then: Return the expected status code
-		if status := res.Code; status != http.StatusBadRequest {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusBadRequest)
-		}
+		assert.Equal(t, http.StatusBadRequest, res.Code)
 	})
 
-	t.Run("Error on create entry with invalid JSON", func(t *testing.T) {
+	t.Run("Error on create entry by Service", func(t *testing.T) {
 		// Given: The CreateEntry Service return an error
-		service := &MockService{
-			CreateEntryFunc: func(entry controlepeso.Entry) (*controlepeso.Entry, error) {
-				return nil, errors.New("Error on Create Entry")
-			},
-		}
+		service := new(MockService)
+		service.On("CreateEntry", mock.Anything).Once().Return(nil, errors.New("Error on Create Entry"))
 
 		// And: The handler received a valid entry
 		handler := handler.NewHandler(service)
@@ -103,9 +89,6 @@ func TestCreateEntry(t *testing.T) {
 		handler.HandleCreateEntry(res, req)
 
 		// Then: Return the expected status code
-		if status := res.Code; status != http.StatusInternalServerError {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusInternalServerError)
-		}
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
 	})
 }
