@@ -92,3 +92,50 @@ func TestCreateEntry(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
 	})
 }
+
+func TestListEntries(t *testing.T) {
+	service := new(MockService)
+
+	t.Run("List Entries with Success", func(t *testing.T) {
+		// Given: The service return an expected list of entries
+		var entries []controlepeso.Entry
+		entries = append(entries, controlepeso.Entry{
+			ID:     1,
+			UserId: 1,
+			Weight: 105.6,
+			Date:   "2022-05-10 00:30:00",
+		})
+		service.On("ListEntries", 0, 10).Once().Return(entries, nil)
+
+		// And: The handler received a valid entry
+		handler := handler.NewHandler(service)
+		req := httptest.NewRequest(http.MethodGet, "/entries?count=10&start=0", nil)
+		res := httptest.NewRecorder()
+
+		// When: The List Entry Handler was called
+		handler.HandleListEntries(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		// And: The response body was correct
+		expected := `[{"id":1,"user_id":1,"weight":105.6,"date":"2022-05-10 00:30:00"}]`
+		assert.Equal(t, expected, res.Body.String())
+	})
+
+	t.Run("List Entries with error on call service", func(t *testing.T) {
+		// Given: The service return an error
+		service.On("ListEntries", 0, 10).Once().Return(nil, errors.New("Error on List Entries"))
+
+		// And: The handler received a valid entry
+		handler := handler.NewHandler(service)
+		req := httptest.NewRequest(http.MethodGet, "/entries?count=10&start=0", nil)
+		res := httptest.NewRecorder()
+
+		// When: The List Entry Handler was called
+		handler.HandleListEntries(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+}
