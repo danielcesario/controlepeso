@@ -1,4 +1,4 @@
-package controlepeso
+package entry
 
 type Repository interface {
 	Save(entry Entry) (*Entry, error)

@@ -1,4 +1,4 @@
-module github.com/danielcesario/controlepeso
+module github.com/danielcesario/entry
 
 go 1.18
 

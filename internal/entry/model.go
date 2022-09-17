@@ -1,4 +1,4 @@
-package controlepeso
+package entry
 
 type Entry struct {
 	ID     int     `json:"id"`

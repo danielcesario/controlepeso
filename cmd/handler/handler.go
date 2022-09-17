@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/danielcesario/controlepeso/internal/controlepeso"
+	"github.com/danielcesario/entry/internal/entry"
 )
 
 type Service interface {
-	CreateEntry(entry controlepeso.Entry) (*controlepeso.Entry, error)
-	ListEntries(start, count int) ([]controlepeso.Entry, error)
+	CreateEntry(entry entry.Entry) (*entry.Entry, error)
+	ListEntries(start, count int) ([]entry.Entry, error)
 }
 
 type Handler struct {
@@ -24,7 +24,7 @@ func NewHandler(service Service) *Handler {
 }
 
 func (handler *Handler) HandleCreateEntry(w http.ResponseWriter, r *http.Request) {
-	var newEntry controlepeso.Entry
+	var newEntry entry.Entry
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&newEntry); err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/danielcesario/controlepeso/cmd/handler"
-	"github.com/danielcesario/controlepeso/internal/controlepeso"
+	"github.com/danielcesario/entry/cmd/handler"
+	"github.com/danielcesario/entry/internal/entry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -17,22 +17,22 @@ type MockService struct {
 	mock.Mock
 }
 
-func (mock *MockService) CreateEntry(entry controlepeso.Entry) (*controlepeso.Entry, error) {
+func (mock *MockService) CreateEntry(entry entry.Entry) (*entry.Entry, error) {
 	arg := mock.Mock.Called(entry)
-	result, _ := arg.Get(0).(controlepeso.Entry)
+	result, _ := arg.Get(0).(entry.Entry)
 	return &result, arg.Error(1)
 }
 
-func (mock *MockService) ListEntries(start, count int) ([]controlepeso.Entry, error) {
+func (mock *MockService) ListEntries(start, count int) ([]entry.Entry, error) {
 	arg := mock.Mock.Called(start, count)
-	result, _ := arg.Get(0).([]controlepeso.Entry)
+	result, _ := arg.Get(0).([]entry.Entry)
 	return result, arg.Error(1)
 }
 
 func TestCreateEntry(t *testing.T) {
 	t.Run("Create Entry with Success", func(t *testing.T) {
 		// Given: The service create and return an expected entry
-		expectedCreatedUser := &controlepeso.Entry{
+		expectedCreatedUser := &entry.Entry{
 			ID:     1,
 			UserId: 1,
 			Weight: 105.6,
@@ -98,8 +98,8 @@ func TestListEntries(t *testing.T) {
 
 	t.Run("List Entries with Success", func(t *testing.T) {
 		// Given: The service return an expected list of entries
-		var entries []controlepeso.Entry
-		entries = append(entries, controlepeso.Entry{
+		var entries []entry.Entry
+		entries = append(entries, entry.Entry{
 			ID:     1,
 			UserId: 1,
 			Weight: 105.6,

@@ -5,15 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/danielcesario/controlepeso/cmd/handler"
-	"github.com/danielcesario/controlepeso/internal/controlepeso"
+	"github.com/danielcesario/entry/cmd/handler"
+	"github.com/danielcesario/entry/internal/entry"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	db := controlepeso.InitializeDB("adm_controlepeso", "controlepeso", "controlepeso")
-	repository := controlepeso.NewPGRepository(db)
-	service := controlepeso.NewService(repository)
+	// db := entry.InitializeDB("adm_controlepeso", "controlepeso", "localhost", "controlepeso")
+	db := entry.InitializeDB("tgjetrdu", "uLQTuIwOwGwIQRKSK2l8H9qICgz7qjS4", "jelani.db.elephantsql.com", "tgjetrdu")
+	repository := entry.NewPGRepository(db)
+	service := entry.NewService(repository)
 	apiHandler := handler.NewHandler(service)
 
 	router := mux.NewRouter()

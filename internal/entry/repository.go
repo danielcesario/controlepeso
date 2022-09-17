@@ -1,4 +1,4 @@
-package controlepeso
+package entry
 
 import (
 	"database/sql"
@@ -18,9 +18,8 @@ func NewPGRepository(conn *sql.DB) *PGRepository {
 	}
 }
 
-func InitializeDB(user, password, dbname string) *sql.DB {
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
-
+func InitializeDB(user, password, host, dbname string) *sql.DB {
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s/%s", user, password, host, dbname)
 	conn, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -63,3 +62,5 @@ func (repository *PGRepository) ListAll(start, count int) ([]Entry, error) {
 
 	return entries, nil
 }
+
+// create table t_entry (id serial PRIMARY KEY, user_id int not null, weight numeric(5,2) not null, date TIMESTAMP not null)
