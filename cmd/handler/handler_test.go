@@ -17,8 +17,8 @@ type MockService struct {
 	mock.Mock
 }
 
-func (mock *MockService) CreateEntry(entry entry.Entry) (*entry.Entry, error) {
-	arg := mock.Mock.Called(entry)
+func (mock *MockService) CreateEntry(entryParam entry.Entry) (*entry.Entry, error) {
+	arg := mock.Mock.Called(entryParam)
 	result, _ := arg.Get(0).(entry.Entry)
 	return &result, arg.Error(1)
 }
