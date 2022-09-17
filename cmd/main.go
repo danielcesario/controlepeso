@@ -20,6 +20,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/entries", apiHandler.HandleCreateEntry).Methods("POST")
 	router.HandleFunc("/entries", apiHandler.HandleListEntries).Methods("GET")
+	router.HandleFunc("/entries/{id}", apiHandler.HandleGetEntry).Methods("GET")
 	runServer(router)
 }
 

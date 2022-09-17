@@ -63,4 +63,16 @@ func (repository *PGRepository) ListAll(start, count int) ([]Entry, error) {
 	return entries, nil
 }
 
+func (repository *PGRepository) FindById(id int) (*Entry, error) {
+	var entry Entry
+	err := repository.DB.QueryRow("SELECT id, user_id, weight, date FROM t_entry WHERE id = $1", id).Scan(&entry.ID, &entry.UserId, &entry.Weight, &entry.Date)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &entry, nil
+}
+
 // create table t_entry (id serial PRIMARY KEY, user_id int not null, weight numeric(5,2) not null, date TIMESTAMP not null)

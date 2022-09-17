@@ -9,6 +9,7 @@ import (
 
 	"github.com/danielcesario/entry/cmd/handler"
 	"github.com/danielcesario/entry/internal/entry"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -27,6 +28,12 @@ func (mock *MockService) ListEntries(start, count int) ([]entry.Entry, error) {
 	arg := mock.Mock.Called(start, count)
 	result, _ := arg.Get(0).([]entry.Entry)
 	return result, arg.Error(1)
+}
+
+func (mock *MockService) GetEntry(id int) (*entry.Entry, error) {
+	arg := mock.Mock.Called(id)
+	result, _ := arg.Get(0).(entry.Entry)
+	return &result, arg.Error(1)
 }
 
 func TestCreateEntry(t *testing.T) {
@@ -134,6 +141,75 @@ func TestListEntries(t *testing.T) {
 
 		// When: The List Entry Handler was called
 		handler.HandleListEntries(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+}
+
+func TestGetEntry(t *testing.T) {
+	t.Run("Get an Entry with Success", func(t *testing.T) {
+		// Given: The service return an expected entry
+		var entry = &entry.Entry{
+			ID:     1,
+			UserId: 1,
+			Weight: 105.6,
+			Date:   "2022-05-10 00:30:00",
+		}
+		service := new(MockService)
+		service.On("GetEntry", mock.Anything).Once().Return(*entry, nil)
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/entries/{id}", nil)
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleGetEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		// And: The response body was correct
+		expected := `{"id":1,"user_id":1,"weight":105.6,"date":"2022-05-10 00:30:00"}`
+		assert.Equal(t, expected, res.Body.String())
+	})
+
+	t.Run("Not Found Error on Get an Entry", func(t *testing.T) {
+		// Given: The service return a nil entry
+		service := new(MockService)
+		service.On("GetEntry", mock.Anything).Return(&entry.Entry{}, nil)
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/entries/{id}", nil)
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleGetEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+
+	t.Run("Internal Server Error on Get an Entry", func(t *testing.T) {
+		// Given: The service return an error
+		service := new(MockService)
+		service.On("GetEntry", mock.Anything).Return(&entry.Entry{}, errors.New("Internal Error"))
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/entries/{id}", nil)
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleGetEntry(res, req)
 
 		// Then: Return the expected status code
 		assert.Equal(t, http.StatusInternalServerError, res.Code)

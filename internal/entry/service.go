@@ -3,6 +3,7 @@ package entry
 type Repository interface {
 	Save(entry Entry) (*Entry, error)
 	ListAll(start, count int) ([]Entry, error)
+	FindById(id int) (*Entry, error)
 }
 
 type Service struct {
@@ -21,4 +22,8 @@ func (service *Service) CreateEntry(entry Entry) (*Entry, error) {
 
 func (service *Service) ListEntries(start, count int) ([]Entry, error) {
 	return service.Repository.ListAll(start, count)
+}
+
+func (service *Service) GetEntry(id int) (*Entry, error) {
+	return service.Repository.FindById(id)
 }

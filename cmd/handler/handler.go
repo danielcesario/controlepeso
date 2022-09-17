@@ -6,11 +6,13 @@ import (
 	"strconv"
 
 	"github.com/danielcesario/entry/internal/entry"
+	"github.com/gorilla/mux"
 )
 
 type Service interface {
 	CreateEntry(entry entry.Entry) (*entry.Entry, error)
 	ListEntries(start, count int) ([]entry.Entry, error)
+	GetEntry(id int) (*entry.Entry, error)
 }
 
 type Handler struct {
@@ -56,4 +58,21 @@ func (handler *Handler) HandleListEntries(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 	respondWithJSON(w, http.StatusOK, entries)
+}
+
+func (handler *Handler) HandleGetEntry(w http.ResponseWriter, r *http.Request) {
+	var params = mux.Vars(r)
+	var id = params["id"]
+	intVar, _ := strconv.Atoi(id)
+
+	entry, err := handler.Service.GetEntry(intVar)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	if entry.ID == 0 {
+		respondWithError(w, http.StatusNotFound, "Entry Not Found")
+	}
+
+	respondWithJSON(w, http.StatusOK, entry)
 }
