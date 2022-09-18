@@ -18,6 +18,8 @@ func main() {
 	entryHandler := handler.NewHandler(entryService)
 
 	router := mux.NewRouter()
+	router.Use(mux.CORSMethodMiddleware(router))
+	router.Use(loggingMiddleware)
 	router.HandleFunc("/entries", entryHandler.HandleCreateEntry).Methods("POST")
 	router.HandleFunc("/entries", entryHandler.HandleListEntries).Methods("GET")
 	router.HandleFunc("/entries/{id}", entryHandler.HandleGetEntry).Methods("GET")
@@ -35,4 +37,13 @@ func runServer(router *mux.Router) {
 	}
 
 	log.Fatal(srv.ListenAndServe())
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		log.Println(r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
 }
