@@ -14,6 +14,7 @@ type Service interface {
 	ListEntries(start, count int) ([]entry.Entry, error)
 	GetEntry(id int) (*entry.Entry, error)
 	DeleteEntry(id int) error
+	UpdateEntry(id int, entry entry.Entry) (*entry.Entry, error)
 }
 
 type Handler struct {
@@ -88,4 +89,29 @@ func (handler *Handler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 	respondWithJSON(w, http.StatusNoContent, nil)
+}
+
+func (handler *Handler) HandleUpdateEntry(w http.ResponseWriter, r *http.Request) {
+	var params = mux.Vars(r)
+	var id = params["id"]
+	idInt, _ := strconv.Atoi(id)
+
+	var newEntry entry.Entry
+	decoder := json.NewDecoder(r.Body)
+	if errorDecode := decoder.Decode(&newEntry); errorDecode != nil {
+		respondWithError(w, http.StatusBadRequest, errorDecode.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	updatedEntry, errUpdate := handler.Service.UpdateEntry(idInt, newEntry)
+	if errUpdate != nil {
+		respondWithError(w, http.StatusInternalServerError, errUpdate.Error())
+	}
+
+	if updatedEntry == nil || updatedEntry.ID == 0 {
+		respondWithError(w, http.StatusNotFound, "Entry Not Found")
+	}
+
+	respondWithJSON(w, http.StatusOK, updatedEntry)
 }

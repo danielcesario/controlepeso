@@ -41,6 +41,12 @@ func (mock *MockService) DeleteEntry(id int) error {
 	return arg.Error(0)
 }
 
+func (mock *MockService) UpdateEntry(id int, entryParam entry.Entry) (*entry.Entry, error) {
+	arg := mock.Mock.Called(id, entryParam)
+	result, _ := arg.Get(0).(entry.Entry)
+	return &result, arg.Error(1)
+}
+
 func TestCreateEntry(t *testing.T) {
 	t.Run("Create Entry with Success", func(t *testing.T) {
 		// Given: The service create and return an expected entry
@@ -258,5 +264,104 @@ func TestDeleteEntry(t *testing.T) {
 
 		// Then: Return the expected status code
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+}
+
+func TestUpdateEntry(t *testing.T) {
+	t.Run("Update an Entry with Success", func(t *testing.T) {
+		// Given: An expected updated entry
+		var expectedUpdatedEntry = &entry.Entry{
+			ID:     1,
+			UserId: 1,
+			Weight: 100.0,
+			Date:   "2022-01-10 00:30:00",
+		}
+
+		// And: An expected Entry to update
+		var expectedEntryToUpdate = entry.Entry{Weight: 100, Date: "2022-01-10 00:30:00"}
+
+		// And: The service receive and return the expected values
+		service := new(MockService)
+		service.On("UpdateEntry", 1, expectedEntryToUpdate).Once().Return(*expectedUpdatedEntry, nil)
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPut, "/entries/{id}", strings.NewReader(`{"weight": 100.0, "date": "2022-01-10 00:30:00"}`))
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleUpdateEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		// And: The response body was correct
+		expected := `{"id":1,"user_id":1,"weight":100,"date":"2022-01-10 00:30:00"}`
+		assert.Equal(t, expected, res.Body.String())
+	})
+
+	t.Run("Error on Update with Invalid Json", func(t *testing.T) {
+		// Given: The service wasn't called
+		service := new(MockService)
+		service.On("UpdateEntry", mock.Anything, mock.Anything).Times(0)
+
+		// And: The request had an invalid value
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPut, "/entries/{id}", strings.NewReader(`{"weight": "one hundred", "date": "2022-01-10 00:30:00"}`))
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleUpdateEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+	})
+
+	t.Run("Error on Update with Internal Server Error", func(t *testing.T) {
+		// Given: An expected Entry to update
+		var expectedEntryToUpdate = entry.Entry{Weight: 100, Date: "2022-01-10 00:30:00"}
+
+		// And: The service receive the expected values and return an error
+		service := new(MockService)
+		service.On("UpdateEntry", 1, expectedEntryToUpdate).Once().Return(nil, errors.New("Error on Update"))
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPut, "/entries/{id}", strings.NewReader(`{"weight": 100.0, "date": "2022-01-10 00:30:00"}`))
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleUpdateEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+
+	t.Run("Error on Update with Not Found Entry", func(t *testing.T) {
+		// Given: An expected Entry to update
+		var expectedEntryToUpdate = entry.Entry{Weight: 100, Date: "2022-01-10 00:30:00"}
+
+		// And: The service receive the expected values and return a nil entry
+		service := new(MockService)
+		service.On("UpdateEntry", 1, expectedEntryToUpdate).Once().Return(nil, nil)
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPut, "/entries/{id}", strings.NewReader(`{"weight": 100.0, "date": "2022-01-10 00:30:00"}`))
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleUpdateEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusNotFound, res.Code)
 	})
 }

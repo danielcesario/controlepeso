@@ -5,6 +5,7 @@ type Repository interface {
 	ListAll(start, count int) ([]Entry, error)
 	FindById(id int) (*Entry, error)
 	DeleteById(id int) error
+	Update(entry Entry) (*Entry, error)
 }
 
 type Service struct {
@@ -35,4 +36,18 @@ func (service *Service) DeleteEntry(id int) error {
 		return err
 	}
 	return service.Repository.DeleteById(id)
+}
+
+func (service *Service) UpdateEntry(id int, entry Entry) (*Entry, error) {
+	currentEntry, err := service.GetEntry(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if currentEntry == nil || currentEntry.ID == 0 {
+		return nil, nil
+	}
+
+	entry.ID = id
+	return service.Repository.Update(entry)
 }

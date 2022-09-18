@@ -83,4 +83,20 @@ func (repository *PGRepository) DeleteById(id int) error {
 	return nil
 }
 
+func (repository *PGRepository) Update(entry Entry) (*Entry, error) {
+	sqlStatement := `
+		UPDATE t_entry SET
+			weight = $2, date = $3
+		WHERE id = $1
+		RETURNING weight, date
+	`
+
+	err := repository.DB.QueryRow(sqlStatement, entry.ID, entry.Weight, entry.Date).Scan(&entry.Weight, &entry.Date)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entry, nil
+}
+
 // create table t_entry (id serial PRIMARY KEY, user_id int not null, weight numeric(5,2) not null, date TIMESTAMP not null)
