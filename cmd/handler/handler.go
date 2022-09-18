@@ -72,7 +72,7 @@ func (handler *Handler) HandleGetEntry(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	if entry.ID == 0 {
+	if entry == nil || entry.ID == 0 {
 		respondWithError(w, http.StatusNotFound, "Entry Not Found")
 	}
 
