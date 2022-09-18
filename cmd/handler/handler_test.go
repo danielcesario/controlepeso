@@ -36,6 +36,11 @@ func (mock *MockService) GetEntry(id int) (*entry.Entry, error) {
 	return &result, arg.Error(1)
 }
 
+func (mock *MockService) DeleteEntry(id int) error {
+	arg := mock.Mock.Called(id)
+	return arg.Error(0)
+}
+
 func TestCreateEntry(t *testing.T) {
 	t.Run("Create Entry with Success", func(t *testing.T) {
 		// Given: The service create and return an expected entry
@@ -210,6 +215,46 @@ func TestGetEntry(t *testing.T) {
 
 		// When: The Get Entry Handler was called
 		handler.HandleGetEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+}
+
+func TestDeleteEntry(t *testing.T) {
+	t.Run("Delete an Entry with Success", func(t *testing.T) {
+		// Given: The service not return error
+		service := new(MockService)
+		service.On("DeleteEntry", mock.Anything).Once().Return(nil)
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/entries/{id}", nil)
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleDeleteEntry(res, req)
+
+		// Then: Return the expected status code
+		assert.Equal(t, http.StatusNoContent, res.Code)
+	})
+
+	t.Run("Internal Server Error on Delete an Entry", func(t *testing.T) {
+		// Given: The service return an error
+		service := new(MockService)
+		service.On("DeleteEntry", mock.Anything).Return(errors.New("Internal Error"))
+
+		// And: The request and response were valid
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/entries/{id}", nil)
+		params := map[string]string{"id": "1"}
+		req = mux.SetURLVars(req, params)
+		handler := handler.NewHandler(service)
+
+		// When: The Get Entry Handler was called
+		handler.HandleDeleteEntry(res, req)
 
 		// Then: Return the expected status code
 		assert.Equal(t, http.StatusInternalServerError, res.Code)

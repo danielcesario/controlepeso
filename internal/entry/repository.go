@@ -75,4 +75,12 @@ func (repository *PGRepository) FindById(id int) (*Entry, error) {
 	return &entry, nil
 }
 
+func (repository *PGRepository) DeleteById(id int) error {
+	_, err := repository.DB.Exec("DELETE FROM t_entry WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // create table t_entry (id serial PRIMARY KEY, user_id int not null, weight numeric(5,2) not null, date TIMESTAMP not null)

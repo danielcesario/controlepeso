@@ -21,6 +21,7 @@ func main() {
 	router.HandleFunc("/entries", apiHandler.HandleCreateEntry).Methods("POST")
 	router.HandleFunc("/entries", apiHandler.HandleListEntries).Methods("GET")
 	router.HandleFunc("/entries/{id}", apiHandler.HandleGetEntry).Methods("GET")
+	router.HandleFunc("/entries/{id}", apiHandler.HandleDeleteEntry).Methods("DELETE")
 	runServer(router)
 }
 

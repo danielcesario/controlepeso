@@ -13,6 +13,7 @@ type Service interface {
 	CreateEntry(entry entry.Entry) (*entry.Entry, error)
 	ListEntries(start, count int) ([]entry.Entry, error)
 	GetEntry(id int) (*entry.Entry, error)
+	DeleteEntry(id int) error
 }
 
 type Handler struct {
@@ -75,4 +76,16 @@ func (handler *Handler) HandleGetEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, entry)
+}
+
+func (handler *Handler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
+	var params = mux.Vars(r)
+	var id = params["id"]
+	intVar, _ := strconv.Atoi(id)
+
+	err := handler.Service.DeleteEntry(intVar)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	respondWithJSON(w, http.StatusNoContent, nil)
 }
