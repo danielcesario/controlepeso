@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/danielcesario/entry/cmd/handler"
@@ -11,8 +12,12 @@ import (
 )
 
 func main() {
-	// db := entry.InitializeDB("adm_controlepeso", "controlepeso", "localhost", "controlepeso")
-	db := entry.InitializeDB("tgjetrdu", "uLQTuIwOwGwIQRKSK2l8H9qICgz7qjS4", "jelani.db.elephantsql.com", "tgjetrdu")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	database := os.Getenv("DB_DATABASE")
+
+	db := entry.InitializeDB(user, password, host, database)
 	entryRepository := entry.NewPGRepository(db)
 	entryService := entry.NewService(entryRepository)
 	entryHandler := handler.NewHandler(entryService)
