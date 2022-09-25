@@ -1,49 +1,50 @@
-# App Weight Management
+# App Controle de Peso
 
 - [Overview](#overview)
-- [Run](#run)
-    - [Database](#database)
-    - [Application](#application)
+- [Executando](#executando)
+    - [Base de Dados](#base-de-dados)
+    - [Rodando Aplicação](#aplicação)
 - [API](#api)
-    - [Weight Inputs](#weight-inputs)
-        - [Create](#create)
-        - [Update](#update)
-        - [List](#list)
-        - [Get](#get)
-        - [Delete](#delete)
+    - [Entradas](#entradas)
+        - [Criação](#criação)
+        - [Atualização](#atualização)
+        - [Listagem](#listagem)
+        - [Obtenção](#obtenção)
+        - [Exclusão](#exclusão)
 
 ## Overview
-Simple project to training and implementing simple concepts of Go Language. A simple API to manage weight evolution using as database a relational dbms (PostgreSQL). The content of the project will be development according the study of new concepts.
+Projeto simples para treinar e implementar simples conceitos da linguagem GO. Uma simples API para controle de peso utilizando como base de dados um banco relacional (PostgreSQL).
+O conteúdo do projeto será incrementado conforme os estudos de novos conceitos.
 
-## Run
+## Executando
 
-### Database
-To run database container execute the follow command on terminal:
+### Base de Dados
+Para iniciar o container do banco de dados executar o seguinte comando no terminal
 ```sh
 docker-compose up -d
 ```
 
-### Application
-To run the application execute the follow command in the root folder:
+### Aplicação
+Para iniciar a API executar o comando na raiz do projeto
 ```sh
 go run cmd/main.go
 ```
 
 ## API
 
-### Weight Inputs
-Weight inputs
+### Entradas
+Lançamentos de peso
 
-|Field    |Type     |Description                  |
+|Campo    |Tipo     |Descrição                    |
 |---------|---------|-----------------------------|
-|id       |int      |Unique id of input           |
-|user_id  |int      |Id of user                   |
-|weight   |float64  |Input weight                 |
-|date     |string   |Input Date                   |
+|id       |int      |Id único de cada entrada     |
+|user_id  |int      |Id do usuário relacionado    |
+|weight   |float64  |Peso registrado              |
+|date     |string   |Data do Registro             |
 
 
-#### Create
-Flow: create weight input
+#### Criação
+Fluxo da criação de um novo lançamento de peso
 ```mermaid
 sequenceDiagram
 Main ->> Handler: HandleCreateEntry(req, resp)
@@ -66,7 +67,7 @@ else Success
 end
 ```
 
-Example of Request
+Exemplo de Request
 ```curlrc
 curl -X POST \
   'localhost:8000/entries' \
@@ -78,8 +79,8 @@ curl -X POST \
 }'
 ```
 
-#### Update
-Flow: update weight input
+#### Atualização
+Fluxo da atualização de um lançamento de peso
 ```mermaid
 sequenceDiagram
 Main ->> Handler: HandleUpdateEntry(req, resp)
@@ -111,7 +112,7 @@ else Success
 end
 ```
 
-Example of Request
+Exemplo de Request
 ```curlrc
 curl -X PUT \
   'localhost:8000/entries/{id}' \
@@ -122,13 +123,13 @@ curl -X PUT \
 }'
 ```
 
-Request Parameters
-|Field    |Type     |Description               |
-|---------|---------|--------------------------|
-|id       |int      |ID of register to update  |
+Parâmetros da Request
+|Campo    |Tipo     |Descrição                        |
+|---------|---------|---------------------------------|
+|id       |int      |ID do Registro a ser atualizado  |
 
-#### List
-Flow: list weight inputs
+#### Listagem
+Fluxo da listagem de lançamentos de peso
 ```mermaid
 sequenceDiagram
 Main ->> Handler: HandleListEntries(req, resp)
@@ -147,20 +148,20 @@ else err == nil
 end
 ```
 
-Example of Request
+Exemplo de Request
 ```curlrc
 curl -X GET \
   'localhost:8000/entries?start=0&count=20' \
 ```
 
-Request Parameters
-|Field    |Type     |Description                |
-|---------|---------|---------------------------|
-|start    |int      |Start index of search      |
-|count    |int      |Quantity of registers      |
+Parâmetros da Request
+|Campo    |Tipo     |Descrição                    |
+|---------|---------|-----------------------------|
+|start    |int      |Registro inicial da pesquisa |
+|count    |int      |Quantidade de registros      |
 
-#### Get
-Flow: get weight input by id
+#### Obtenção
+Fluxo de obtenção de um lançamentos de peso
 ```mermaid
 sequenceDiagram
 Main ->> Handler: HandleGetEntry(req, resp)
@@ -181,19 +182,19 @@ else err == nil
 end
 ```
 
-Example of Request
+Exemplo de Request
 ```curlrc
 curl -X GET \
   'localhost:8000/entries/{id}' \
 ```
 
-Request Parameters
-|Field    |Type     |Description          |
-|---------|---------|---------------------|
-|id       |int      |ID of register       |
+Parâmetros da Request
+|Campo    |Tipo     |Descrição                    |
+|---------|---------|-----------------------------|
+|id       |int      |ID do Registro buscado       |
 
-#### Delete
-Flow: delete weight input
+#### Exclusão
+Fluxo de exclusão de um lançamentos de peso
 ```mermaid
 sequenceDiagram
 Main ->> Handler: HandleDeleteEntry(req, resp)
@@ -212,13 +213,13 @@ else err == nil
 end
 ```
 
-Example of Request
+Exemplo de Request
 ```curlrc
 curl -X DELETE \
   'localhost:8000/entries/{id}' \
 ```
 
-Request Parameters
-|Field    |Type     |Description          |
-|---------|---------|---------------------|
-|id       |int      |ID of register       |
+Parâmetros da Request
+|Campo    |Tipo     |Descrição                        |
+|---------|---------|---------------------------------|
+|id       |int      |ID do Registro a ser excluído    |
